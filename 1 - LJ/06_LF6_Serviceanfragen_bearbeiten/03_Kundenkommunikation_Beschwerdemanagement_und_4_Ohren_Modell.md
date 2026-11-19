@@ -47,6 +47,8 @@ Jede Nachricht hat **4 Seiten**:
 | **Alternativfragen** | Geben zwei oder drei konkrete Auswahlmöglichkeiten vor. | Zur **Terminvereinbarung** oder schnellen Auswahl zwischen zwei Lösungswegen. | *„Passt Ihnen der Rückruf unseres Technikers heute um 14:00 Uhr oder lieber morgen um 09:00 Uhr?“* |
 | **Paraphrasieren (Aktives Zuhören)** | Zusammenfassen der Kundenaussage in eigenen Worten. | Zur **Verständnissicherung** und um dem Kunden zu zeigen, dass man ihm aufmerksam zugehört hat. | *„Wenn ich Sie richtig verstanden habe, tritt der Abbruch nur auf, wenn Sie aus dem Homeoffice über VPN drucken – im Büro klappt es?“* |
 
+> **Praxis-Tipp für gezielte Rückfragen in Beratungsgesprächen:** Vermeide zu breite Fragen (*„Welche Technik habt ihr?“*) und frage bereits bekannte Fakten nicht doppelt ab. Ordne jede Rückfrage der **passenden Rolle** (z. B. Geschäftsführung vs. Fachabteilung vs. IT-Dienstleister) zu und halte fest, **welche konkrete Entscheidung** von der Antwort abhängt. Mehr zur systematischen Trennung von *Problem, Ursachenvermutung, Lösungsidee und prüfbarer Anforderung* findest du in [01_Projektmanagement_SMART_Phasen_Lasten_Pflichtenheft.md](../07_BWL_Projektmanagement_Vertragsrecht_und_Kalkulation/01_Projektmanagement_SMART_Phasen_Lasten_Pflichtenheft.md).
+
 ---
 
 ### 3. Beschwerdemanagement & Deeskalation in 5 Schritten (Umgang mit wütenden Kunden)

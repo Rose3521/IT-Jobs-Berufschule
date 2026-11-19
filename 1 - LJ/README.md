@@ -53,12 +53,12 @@ Willkommen in deiner zentralen Themen- und Lehrinhalte-Sammlung für das **1. Au
 ---
 
 ### 🌐 [03_LF3_Clients_in_Netzwerke_einbinden](./03_LF3_Clients_in_Netzwerke_einbinden/) *(Lernfeld 3 – 80 Std. / ~22 % der AP1)*
-* [01_Netzwerkgrundlagen_OSI_Medien_Verkabelung_Switching.md](./03_LF3_Clients_in_Netzwerke_einbinden/01_Netzwerkgrundlagen_OSI_Medien_Verkabelung_Switching.md) – *ISO/OSI vs. TCP/IP, Kapselung/PDUs, Kollisions- vs. Broadcastdomäne, Strukturierte Verkabelung (EN 50173), Kupfer vs. LWL, PoE*
-* [02_Adressierung_Zahlensysteme_MAC_ARP_IPv4_IPv6_SLAAC.md](./03_LF3_Clients_in_Netzwerke_einbinden/02_Adressierung_Zahlensysteme_MAC_ARP_IPv4_IPv6_SLAAC.md) – *Binär/Hex-Umrechnung, MAC vs. IP, Private IPs (RFC 1918), APIPA, ARP-Ablauf, IPv6-Kürzungsregeln, Adresstypen & SLAAC*
+* [01_Netzwerkgrundlagen_OSI_Medien_Verkabelung_Switching.md](./03_LF3_Clients_in_Netzwerke_einbinden/01_Netzwerkgrundlagen_OSI_Medien_Verkabelung_Switching.md) – *ISO/OSI vs. TCP/IP, Kapselung/PDUs, Ethernet-Frame (EtherType/FCS), Switching (Lernen/Fluten, Duplex-Mismatch), Verkabelung (EN 50173), PoE & PowerShell-Diagnose*
+* [02_Adressierung_Zahlensysteme_MAC_ARP_IPv4_IPv6_SLAAC.md](./03_LF3_Clients_in_Netzwerke_einbinden/02_Adressierung_Zahlensysteme_MAC_ARP_IPv4_IPv6_SLAAC.md) – *Binär/Hex, MAC vs. IP, RFC 1918, APIPA, ARP, IPv6 (RFC 5952, EUI-64, `/48`/`/56`/`/64`-Planung, SLAAC), Dual-Stack & 6 IPv6-Code-/DB-Fallen*
 * [03_Netzwerkkonfiguration_Switch_Router_und_Cisco_IOS.md](./03_LF3_Clients_in_Netzwerke_einbinden/03_Netzwerkkonfiguration_Switch_Router_und_Cisco_IOS.md) – *Konsolenzugang (`9600-8-N-1`), RAM/NVRAM/Flash/ROM, Cisco IOS Befehlsmodi, Komplettes Konfigurationsskript & `show`-Befehle*
 * [04_Subnetting_IPv4_CIDR_Berechnung_und_Beispiele.md](./03_LF3_Clients_in_Netzwerke_einbinden/04_Subnetting_IPv4_CIDR_Berechnung_und_Beispiele.md) – *CIDR-Tabelle (`/24`–`/30`), Netz-ID, Broadcast, Host-Anzahl ($2^h-2$) & Schritt-für-Schritt-Musteraufgaben*
-* [05_VLANs_8021Q_und_WLAN_Funknetze_WPA2_WPA3.md](./03_LF3_Clients_in_Netzwerke_einbinden/05_VLANs_8021Q_und_WLAN_Funknetze_WPA2_WPA3.md) – *VLAN (IEEE 802.1Q, Access/Untagged vs. Trunk/Tagged, Inter-VLAN-Routing), WLAN (CSMA/CA, 2,4 vs. 5 GHz, WPA2/WPA3-Enterprise)*
-* [06_Netzwerkdienste_TCP_UDP_Ports_DHCP_DNS_NAT_Diagnose.md](./03_LF3_Clients_in_Netzwerke_einbinden/06_Netzwerkdienste_TCP_UDP_Ports_DHCP_DNS_NAT_Diagnose.md) – *TCP vs. UDP, Standard-Ports, DHCP (DORA), DNS-Records, NAT/PAT & Diagnose (`ping`, `ipconfig`, `nslookup`)*
+* [05_VLANs_8021Q_und_WLAN_Funknetze_WPA2_WPA3.md](./03_LF3_Clients_in_Netzwerke_einbinden/05_VLANs_8021Q_und_WLAN_Funknetze_WPA2_WPA3.md) – *VLAN (IEEE 802.1Q 4-Byte-Tag `TPID/PCP/DEI/VID`, Native & Management VLAN, 5-Schritte-VLAN-Plan), WLAN (CSMA/CA, 2,4 vs. 5 GHz, WPA2/WPA3-Enterprise)*
+* [06_Netzwerkdienste_TCP_UDP_Ports_DHCP_DNS_NAT_Diagnose.md](./03_LF3_Clients_in_Netzwerke_einbinden/06_Netzwerkdienste_TCP_UDP_Ports_DHCP_DNS_NAT_Diagnose.md) – *TCP vs. UDP, Standard-Ports, DHCP (DORA), DNS-Records, Source-NAT/PAT, Portweiterleitung (DNAT), 4 NAT-Effekte auf Apps & Diagnose*
 
 ---
 
@@ -79,6 +79,7 @@ Willkommen in deiner zentralen Themen- und Lehrinhalte-Sammlung für das **1. Au
 * [04_Datenbanken_ERM_Relationenmodell_und_Normalisierung_1NF_3NF.md](./05_LF5_Software_zur_Datenverwaltung_anpassen/04_Datenbanken_ERM_Relationenmodell_und_Normalisierung_1NF_3NF.md) – *Anomalien, ER-Modell (ERM), Kardinalitäten (`1:n`, `n:m`-Zwischentabelle), Schritt-für-Schritt-Normalisierung (1NF–3NF)*
 * [05_SQL_Komplettwissen_SELECT_JOIN_GROUP_BY_DML_DDL.md](./05_LF5_Software_zur_Datenverwaltung_anpassen/05_SQL_Komplettwissen_SELECT_JOIN_GROUP_BY_DML_DDL.md) – *`SELECT`-Reihenfolge, `WHERE` vs. `HAVING`, `GROUP BY`, `INNER JOIN` vs. `LEFT JOIN`, `INSERT`, `UPDATE`, `DELETE`, `CREATE TABLE`*
 * [06_Datenformate_CSV_JSON_XML_Zeichensaetze_und_Softwaretests.md](./05_LF5_Software_zur_Datenverwaltung_anpassen/06_Datenformate_CSV_JSON_XML_Zeichensaetze_und_Softwaretests.md) – *CSV vs. JSON vs. XML (Syntaxvorlagen), ASCII vs. UTF-8, Black-Box- vs. White-Box-Tests & Code Coverage ($C_0 / C_1$)*
+* [07_Architektur_Kommunikationsmatrix_Sockets_und_Protokolle.md](./05_LF5_Software_zur_Datenverwaltung_anpassen/07_Architektur_Kommunikationsmatrix_Sockets_und_Protokolle.md) – *Client-Server-Rollen, 3-Schichten-Architektur, Web-APIs, Kommunikationsmatrix/-diagramm, TCP-Sockets in C# (`async`/`lock`), Protokolldesign, Idempotenz & `UdpClient`*
 
 ---
 
@@ -90,7 +91,7 @@ Willkommen in deiner zentralen Themen- und Lehrinhalte-Sammlung für das **1. Au
 ---
 
 ### 📈 [07_BWL_Projektmanagement_Vertragsrecht_und_Kalkulation](./07_BWL_Projektmanagement_Vertragsrecht_und_Kalkulation/) *(Übergreifende BWL-, PM- & Rechts-Schwerpunkte der AP1)*
-* [01_Projektmanagement_SMART_Phasen_Lasten_Pflichtenheft.md](./07_BWL_Projektmanagement_Vertragsrecht_und_Kalkulation/01_Projektmanagement_SMART_Phasen_Lasten_Pflichtenheft.md) – *DIN 69901, Magisches Dreieck, SMART-Ziele, 4 Projektphasen, Lastenheft vs. Pflichtenheft*
+* [01_Projektmanagement_SMART_Phasen_Lasten_Pflichtenheft.md](./07_BWL_Projektmanagement_Vertragsrecht_und_Kalkulation/01_Projektmanagement_SMART_Phasen_Lasten_Pflichtenheft.md) – *DIN 69901, Magisches Dreieck, SMART-Ziele, 4 Projektphasen, Lastenheft vs. Pflichtenheft & Kundenauftragsanalyse (Problem vs. Vermutung vs. Lösungsidee vs. prüfbare Anforderung, Nachweisstatus)*
 * [02_Projektplanung_PSP_Gantt_und_Netzplantechnik_Kritischer_Pfad.md](./07_BWL_Projektmanagement_Vertragsrecht_und_Kalkulation/02_Projektplanung_PSP_Gantt_und_Netzplantechnik_Kritischer_Pfad.md) – *PSP, Gantt-Diagramm, Meilensteine & komplette Netzplan-Berechnung (FAZ, FEZ, SAZ, SEZ, GP, FP, Kritischer Pfad)*
 * [03_Agile_Methoden_Scrum_Kanban_Change_Management_und_Rollout.md](./07_BWL_Projektmanagement_Vertragsrecht_und_Kalkulation/03_Agile_Methoden_Scrum_Kanban_Change_Management_und_Rollout.md) – *Wasserfall vs. Agile, Scrum (Rollen, Events, Artefakte), Kanban (WIP-Limit), Change Management & Rollout-Strategien*
 * [04_Vertragsrecht_BGB_Vertragsarten_Gewaehrleistung_Verzug_Rechnung.md](./07_BWL_Projektmanagement_Vertragsrecht_und_Kalkulation/04_Vertragsrecht_BGB_Vertragsarten_Gewaehrleistung_Verzug_Rechnung.md) – *Kauf-/Werk-/Dienst-/Mietvertrag, Gewährleistung vs. Garantie, Rügepflicht (§ 377 HGB), Liefer-/Zahlungsverzug, Rechnung prüfen (§ 14 UStG)*

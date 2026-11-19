@@ -58,12 +58,33 @@ Vergibt automatisch **IP-Adresse, Subnetzmaske, Standardgateway, DNS-Server und 
 * **`MX`-Record (*Mail Exchange*):** Zuständiger **E-Mail-Server** einer Domain
 * **`PTR`-Record (*Pointer*):** **Reverse-DNS** (IP-Adresse $\rightarrow$ Domainname)
 
-#### C. NAT / PAT (*Network / Port Address Translation*)
-* Da **private IPv4-Adressen** (z. B. `192.168.1.x`) im öffentlichen Internet nicht geroutet werden, ersetzt der Internet-Router beim Senden ins Internet die private Quell-IP jedes PCs durch seine **einzige öffentliche WAN-IPv4-Adresse** und merkt sich in einer **NAT-Übersetzungstabelle anhand der Quell-Portnummer (PAT)**, zu welchem internen PC die eintreffende Antwort gehört.
+#### C. NAT / PAT (*Source-NAT*) & Portweiterleitung (*Destination-NAT*) im Detail *(Erweitert aus EduSysTrainings)*
+
+* **Source-NAT mit Portumsetzung (PAT / NAPT – Weg von innen ins Internet):**
+  * Da private IPv4-Adressen (RFC 1918: `10.0.0.0/8`, `172.16.0.0/12`, `192.168.0.0/16`) im Internet nicht geroutet werden, ersetzt der Router auf dem **Hinweg** die private Absender-IP und den Quellport durch seine **öffentliche WAN-IP + einen freien öffentlichen Port** und speichert diese Zuordnung in seiner **NAT-Tabelle**:
+    ```text
+    Hinweg:  PC (10.20.10.23:51544) ---> [NAT-Router: 203.0.113.42:40000] ---> Webserver (198.51.100.80:443)
+    Rückweg: PC (10.20.10.23:51544) <--- [NAT-Router schlägt 40000 nach!] <--- Webserver (198.51.100.80:443)
+    ```
+  * *Nebeneffekt:* Unangeforderte Pakete von außen passen zu keinem Eintrag in der NAT-Tabelle und werden verworfen. **Achtung:** NAT ersetzt trotzdem **keine Firewall**, da es ausgehenden Verkehr und internen Verkehr nicht kontrolliert!
+* **Portweiterleitung (*Port Forwarding* / Destination-NAT / DNAT – Weg von außen nach innen):**
+  * Feste Regel im Router, damit ein eigener Server (z. B. Web-App) aus dem Internet erreichbar ist: `203.0.113.42:443` $\rightarrow$ `10.20.40.10:443` (hier wird die **Ziel-IP** umgeschrieben; der Server sieht die echte Kunden-IP als Absender).
+  * **⚠️ Sicherheitsregeln für Portweiterleitungen:**
+    1. **So wenige wie möglich** (nur Dienste, die wirklich für externe Nutzer gedacht sind, z. B. HTTPS Port `443`).
+    2. **NIEMALS Datenbanken (`5432`, `3306`) oder Admin-Zugänge (`22` SSH, `3389` RDP) per Portweiterleitung ins Internet öffnen!** Für interne Zugriffe aus dem Homeoffice immer ein **VPN** nutzen!
+    3. **„Security by Obscurity“ schützt nicht:** Einen Dienst auf einen ungewöhnlichen Port (z. B. `2222` oder `8443`) zu legen, hält automatisierte Port-Scanner nur Sekunden auf.
+* **Die 4 typischen Probleme durch NAT in Anwendungen (Praxis-Gold!):**
+
+| NAT-Effekt | Was passiert technisch? | Gegenmaßnahme / Lösung |
+| :--- | :--- | :--- |
+| **1. Leerlauf-Timeout** | Läuft über eine TCP-Verbindung z. B. 300 s lang kein Datenpaket, löscht der Router den NAT-Eintrag $\rightarrow$ Live-Verbindung (z. B. Chat/Termin-Ansicht) hängt stillschweigend! | Anwendung sendet regelmäßig ein kleines Lebenszeichen (**Heartbeat / Keep-Alive**) deutlich kürzer als der Timeout und baut bei Abbruch automatisch neu auf. |
+| **2. Viele Nutzer teilen sich 1 IP (*CGNAT*)** | Alle 25 Mitarbeiter einer Firma (oder tausende Mobilfunknutzer bei *Carrier-Grade-NAT*) erscheinen beim Server mit derselben öffentlichen IP! | **Login-Sperren / Rate-Limits niemals allein an die IP-Adresse koppeln** (sonst sperrt 1 sich vertippender Mitarbeiter die gesamte Firma aus!), sondern primär ans **Benutzerkonto**! |
+| **3. NAT-Loopback (*Hairpinning*)** | Ein PC im internen Firmennetz ruft die öffentliche Domain/IP der eigenen Firma auf; viele Router können das Paket nicht „umdrehen“ und zurück ins LAN schicken $\rightarrow$ Seite lädt nicht! | **Internes DNS (*Split-Horizon DNS*):** Intern wird der Domainname direkt auf die interne Server-IP aufgelöst, extern auf die öffentliche IP. |
+| **4. Von außen nicht erreichbar** | Ein Client hinter NAT kann keine eingehenden Verbindungen annehmen. | Der Client baut die Verbindung selbst **von innen nach außen** zum Server auf und hält sie offen (Prinzip von Push-Diensten & Messengern). |
 
 ---
 
-### 3. Systematische Fehlerdiagnose mit `ping`, `ipconfig` & `nslookup` (AP1: 11 Punkte!)
+### 3. Systematische Fehlerdiagnose mit `ping`, `ipconfig`, `Test-NetConnection` & `nslookup` (AP1: 11 Punkte!)
 
 Wenn in einer Prüfungsaufgabe steht *„PC A erreicht die Webseite `www.firma.de` nicht – wie gehen Sie bei der Fehlersuche vor?“*:
 1. **`ipconfig /all` prüfen:** Hat der PC eine gültige IP, Subnetzmaske, Standardgateway und DNS-Server – oder eine **`169.254.x.x` (APIPA)**? *(Falls APIPA: DHCP-Server nicht erreichbar oder Netzwerkkabel/VLAN-Port falsch!).*

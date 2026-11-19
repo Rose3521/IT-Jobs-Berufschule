@@ -39,6 +39,28 @@
 
 * **Inter-VLAN-Routing:** Da jedes VLAN ein eigenes IP-Subnetz und eine eigene Broadcastdomäne bildet, können zwei verschiedene VLANs **nur über einen Router (z. B. per *Router-on-a-Stick* mit Sub-Interfaces am Trunk-Port) oder einen Layer-3-Switch** miteinander kommunizieren (wo dann eine Firewall regeln kann, wer mit wem sprechen darf!).
 
+#### Bit-genauer Aufbau des 4-Byte IEEE 802.1Q VLAN-Tags *(Erweitert aus EduSysTrainings)*
+
+```text
++----------+----------+========================+-----------+--------------------+-----+
+| Ziel-MAC | Quell-MAC|   802.1Q-Tag (4 Byte)  | EtherType | Nutzdaten          | FCS |
+| 6 Byte   | 6 Byte   | TPID | PCP | DEI | VID | 2 Byte    | 46 – 1.500 Byte    | 4 B |
++----------+----------+========================+-----------+--------------------+-----+
+                       16 Bit  3 B   1 B  12 Bit
+                      (0x8100)(0-7) (0/1)(1-4094)
+```
+
+* **`TPID` (*Tag Protocol Identifier*, 16 Bit):** Immer **`0x8100`** – signalisiert dem Switch: *„Achtung, hier folgt ein 802.1Q-VLAN-Tag!“*
+* **`PCP` (*Priority Code Point*, 3 Bit):** Priorität von `0` bis `7` für Quality of Service (QoS), z. B. Bevorzugung von VoIP-Sprachpaketen.
+* **`DEI` (*Drop Eligible Indicator*, 1 Bit):** Markiert Frames, die bei akuter Überlast zuerst verworfen werden dürfen.
+* **`VID` (*VLAN Identifier*, 12 Bit):** Die eigentliche **VLAN-ID** ($2^{12} = 4.096$ Werte `0–4095`; `0` und `4095` sind reserviert $\rightarrow$ nutzbare IDs **`1` bis `4094`**).
+* **Native VLAN & Security-Best-Practice:** Auf einem Trunk kann ein einzelnes VLAN ausnahmsweise *untagged* übertragen werden (*Native VLAN*, ab Werk oft `VLAN 1`). Da das Sicherheitslücken (*VLAN Hopping*) begünstigt, gilt als goldene Praxis: **Keine Produktivgeräte in VLAN 1 belassen**, ein eigenes **Verwaltungs-VLAN** (z. B. `VLAN 99`) für Switch-/AP-Oberflächen anlegen und auf Trunks **nur die wirklich benötigten VLANs** taggen!
+* **⚠️ Wichtige Denkfalle bei der Netzwerksegmentierung:** *„VLANs allein stellen noch keine Sicherheit her, solange der Router dazwischen einfach jeden Datenverkehr zwischen den VLANs durchlässt!“* Erst **Firewall-Regeln am Router (Layer 3/4)** setzen durch, dass z. B. das Entwickler-VLAN nicht versehentlich auf die Produktionsdatenbank zugreifen kann!
+* **In 5 Schritten zum professionellen VLAN-Plan (für Prüfungen & Projekte):**
+  1. **Gerätegruppen nach Funktion & Schutzbedarf bilden** (z. B. Produktion, Test, Entwicklung, Büro, Gäste, Netz-Verwaltung).
+  2. **Merkbares Nummerierungsschema festlegen:** Faustregel **1 VLAN = 1 eigenes IP-Subnetz** (z. B. VLAN-ID = 3. Oktett: `VLAN 30` $\rightarrow$ `10.20.30.0/24`).
+  3. **Access-Ports (`U` = untagged)** für Endgeräte und **Trunk-Ports (`T` = tagged)** für Switch-Uplinks, Router, Access Points mit mehreren SSIDs und Virtualisierungsserver (mit VMs aus verschiedenen VLANs!) im **Port-Plan** dokumentieren.
+
 ---
 
 ### 2. WLAN (IEEE 802.11) – Frequenzen, Zugriffsverfahren & Sicherheit

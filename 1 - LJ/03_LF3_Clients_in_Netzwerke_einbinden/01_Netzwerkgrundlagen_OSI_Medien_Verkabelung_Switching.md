@@ -58,3 +58,54 @@
   * **Multimode-Faser (MMF):** Dickerer Faserkern ($50\text{ µm}$), Licht breitet sich auf mehreren Wegen (*Moden*) gleichzeitig aus $\rightarrow$ kostengünstige LED/VCSEL-Laser, für mittlere Strecken bis ca. $500\text{ m}$ (Gebäudeverkabelung).
   * **Singlemode-/Monomode-Faser (SMF):** Extrem dünner Faserkern ($9\text{ µm}$), Licht läuft auf exakt einem geraden Strahl ohne Modendispersion $\rightarrow$ für weite Strecken von **vielen Kilometern** (Campus, Stadtnetze, Tiefseekabel).
   * *Vorteile LWL:* Extrem hohe Bandbreite (Terabit/s), **100 % unempfindlich gegen elektromagnetische Störungen**, abhörsicher, galvanische Trennung.
+
+---
+
+### 4. Aufbau eines Ethernet-Frames (Layer 2) & Switch-Verhalten im Detail *(Erweitert aus EduSysTrainings)*
+
+```text
++---------------+----------------+-----------+--------------------+-----------+
+| Ziel-MAC      | Quell-MAC      | EtherType | Nutzdaten (Payload)| FCS (CRC) |
+| 6 Byte        | 6 Byte         | 2 Byte    | 46 – 1.500 Byte    | 4 Byte    |
++---------------+----------------+-----------+--------------------+-----------+
+```
+
+* **EtherType (2 Byte):** Sagt dem Empfänger, welches Protokoll in den Nutzdaten steckt:
+  * **`0x0800`** = **IPv4** | **`0x86DD`** = **IPv6** | **`0x0806`** = **ARP** | **`0x8100`** = **IEEE 802.1Q VLAN-Tag**
+* **MTU (*Maximum Transmission Unit*):** Die Obergrenze der Nutzdaten in einem Standard-Ethernet-Frame beträgt **$1.500\text{ Byte}$** (größere IP-Pakete müssen fragmentiert werden).
+* **FCS (*Frame Check Sequence*, 4 Byte CRC-Prüfsumme):** Der Empfänger rechnet die Prüfsumme nach. Stimmt sie nicht, war der Frame unterwegs beschädigt und **wird auf Schicht 2 stillschweigend verworfen!**
+  * *Wichtige Folge:* Schicht 2 sendet verworfene Frames **nicht** neu! Erst **TCP auf Schicht 4** bemerkt nach einem Timeout, dass Daten fehlen, und fordert sie neu an $\rightarrow$ viele beschädigte Frames führen zu extremen **Wartezeiten (Lags)**!
+* **Die 3 Grundfunktionen eines Switches:**
+  1. **Lernen (*Learning*):** Merkt sich die **Quell-MAC** jedes ankommenden Frames samt Port in der MAC-Adresstabelle (Einträge verfallen nach Inaktivität, oft nach ~5 Minuten).
+  2. **Weiterleiten (*Forwarding*):** Steht die **Ziel-MAC** bereits in der Tabelle, geht der Frame gezielt nur an diesen einen Port.
+  3. **Fluten (*Flooding*):** Ist die **Ziel-MAC noch unbekannt** (oder ist es ein Broadcast `FF:FF:FF:FF:FF:FF`), schickt der Switch den Frame an **alle Ports außer dem Empfangsport**.
+* **Access Point als Layer-2-Brücke:** Ein WLAN-Access-Point leitet Frames drahtloser Geräte (z. B. Handscanner, Laptops) **mit deren eigener MAC-Adresse** ins Kabelnetz weiter – deshalb erscheinen alle verbundenen WLAN-Geräte am selben Uplink-Port in der MAC-Tabelle des Switches!
+* **Managed vs. Unmanaged Switch:** Ein *Unmanaged Switch* (20-€-Gerät) lässt sich weder konfigurieren noch auslesen. Ein *Managed Switch* bietet VLANs, Port-Security, **MAC-Tabellen-Einsicht** und **Port-Fehlerzähler** für die Diagnose.
+
+---
+
+### 5. Duplex-Mismatch & Switch-Fehlerzähler auswerten (Praxis-Klassiker!)
+
+* **Autonegotiation:** Beide Seiten einer Leitung handeln beim Einstecken automatisch Geschwindigkeit (`100`/`1000 Mbit/s`) und Duplex (**Vollduplex** = gleichzeitig Senden & Empfangen ohne Kollisionen) aus.
+* **Wie entsteht ein Duplex-Mismatch?**
+  * Wird **eine Seite fest auf z. B. `100 Mbit/s Vollduplex`** eingestellt, während die **Gegenseite auf `Automatisch` (Autonegotiation)** steht, erkennt die automatische Seite zwar das Tempo (`100 Mbit/s`), bekommt aber keine Duplex-Aushandlung und **fällt gemäß Standard auf Halbduplex zurück!**
+  * *Folge:* Die fest eingestellte Seite sendet munter drauflos (Vollduplex), während die Halbduplex-Seite ständig Kollisionen meldet und Frames abbricht. Das Netz „funktioniert noch irgendwie“, wird aber **unter Last extrem langsam**!
+* **Port-Fehlerzähler auf einem Managed Switch richtig deuten:**
+
+| Fehlerzähler | Technische Bedeutung | Typische Ursache |
+| :--- | :--- | :--- |
+| **Kollisionen (*Late Collisions*)** | Zwei Seiten senden gleichzeitig auf einer Leitung (nur bei Halbduplex möglich). | Halbduplex-Betrieb; viele späte Kollisionen = klares Zeichen für **Duplex-Mismatch**! |
+| **FCS- / CRC-Fehler** | Prüfsumme am Frame-Ende stimmt nicht $\rightarrow$ Frame wird verworfen. | Defektes/zu langes Kabel, elektromagnetische Störungen oder **Duplex-Mismatch**. |
+| **Runts** | Abgebrochene, zu kurze Frames (**$< 64\text{ Byte}$**). | Kollisionen auf der Gegenseite (**Duplex-Mismatch**). |
+
+---
+
+### 6. Schicht-für-Schicht-Diagnose unter Windows & PowerShell
+
+| OSI-Schicht | Leitfrage | Konkreter Windows- / PowerShell-Befehl |
+| :---: | :--- | :--- |
+| **1 – Bitübertragung** | Kommt ein elektrisches/Funk-Signal an? | Link-LED am Port prüfen, WLAN-Signalstärke messen |
+| **2 – Sicherung** | Hat der Adapter eine MAC, Vollduplex & Nachbarn? | `getmac /v` · `arp -a` · `Get-NetAdapter \| Format-Table Name, Status, LinkSpeed, FullDuplex` |
+| **3 – Vermittlung** | Hat der Host eine gültige IP & erreicht das Gateway? | `ipconfig /all` · `ping <Gateway-IP>` |
+| **4 – Transport** | Lauscht der Dienst auf seinem TCP-Port? | `Test-NetConnection <Host> -Port <Port>` (*prüft `TcpTestSucceeded`*) · `netstat -an \| findstr <Port>` |
+| **7 – Anwendung** | Antwortet die Web-App korrekt und schnell? | `curl.exe -i <URL>` (*zeigt HTTP-Statuszeile, z. B. `200 OK`*), Browser-DevTools (`F12` $\rightarrow$ Netzwerk) |

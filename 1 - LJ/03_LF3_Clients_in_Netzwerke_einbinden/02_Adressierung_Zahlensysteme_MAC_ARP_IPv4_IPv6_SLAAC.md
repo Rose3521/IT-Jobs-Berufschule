@@ -67,3 +67,55 @@
   * **`ff00::/8`:** **Multicast** (ersetzt bei IPv6 auch den Broadcast! `ff02::1` = alle Hosts im LAN, `ff02::2` = alle Router im LAN).
 * **SLAAC (*Stateless Address Autoconfiguration*):**
   * Client erzeugt seine Link-Local-Adresse (`fe80::`), prüft per **DAD (*Duplicate Address Detection*)**, ob sie eindeutig ist, fragt per **Router Solicitation (RS an `ff02::2`)** den Router nach dem globalen `/64`-Präfix, erhält dieses per **Router Advertisement (RA)** und kombiniert das Präfix mit seiner eigenen 64-Bit Interface-ID (per EUI-64 oder zufälligen *Privacy Extensions*) zu einer fertigen Global-Unicast-Adresse – **ganz ohne DHCP-Server**!
+
+---
+
+### 5. IPv6-Vertiefung: RFC 5952, EUI-64, Präfix-Planung, Dual-Stack & Code-Fallen *(Erweitert aus EduSysTrainings)*
+
+#### A. Normgerechte Schreibweise nach RFC 5952 & Spezial-Adressen
+Damit jeder dieselbe IPv6-Adresse identisch notiert (wichtig für Prüfungen & Firewall-Regeln!):
+1. **Immer die längste Null-Folge** durch `::` ersetzen (bei zwei gleich langen Null-Folgen die **erste** von links).
+2. Eine **einzelne** Null-Gruppe (`:0000:`) **NICHT** durch `::` kürzen, sondern als `:0:` schreiben!
+3. Alle Hexadezimal-Buchstaben (`a–f`) **kleinschreiben**.
+* **Weitere wichtige Spezial-Adressen & Schreibweisen:**
+  * **`::`** (*Unspezifizierte Adresse*): Entspricht `0.0.0.0` bei IPv4 (*„noch keine Adresse“* bzw. beim Server-Bind: *„auf allen Schnittstellen lauschen“*).
+  * **`2001:db8::/32`**: Offizielles **Dokumentationspräfix** (reserviert für Beispiele, Prüfungsaufgaben und Lehrmaterial).
+  * **Zonen-ID unter Windows (`fe80::1c2b:3aff:fe4d:5e6f%12`):** Das `%12` am Ende bezeichnet die Adapter-Nummer, da jeder Netzwerkadapter sein eigenes `fe80::`-Segment besitzt.
+  * **⚠️ IPv6 in URLs (Entwicklerfalle!):** Weil Doppelpunkte in einer URL die Portnummer abtrennen, muss eine IPv6-Adresse in einer URL **immer in eckige Klammern `[...]`** gesetzt werden:  
+    ✅ `https://[2001:db8:4a00:110::25]:8443/api` *(bei `curl.exe` zusätzlich Option `-g` angeben!)*
+
+#### B. EUI-64 Schritt-für-Schritt von Hand berechnen (aus der 48-Bit MAC-Adresse!)
+Will ein Gerät aus seiner MAC-Adresse (z. B. **`A4:5E:60:12:34:56`**) eine 64-Bit-Interface-ID bilden:
+1. **MAC-Adresse genau in der Mitte teilen:** `A4:5E:60` | `12:34:56`
+2. **Die 2 Bytes `FF:FE` in die Mitte einfügen:** `A4:5E:60:FF:FE:12:34:56` *(daran erkennt man sofort jede EUI-64-Adresse!)*
+3. **Im allerersten Byte das 7. Bit von links (*U/L-Bit*) umdrehen (invertieren):**
+   * Erstes Byte `A4` in Binär: `1010 0100` $\xrightarrow{\text{7. Bit umdrehen (0 -> 1)}}$ `1010 0110` = **`A6`**!
+4. **In 4er-Blöcken kleingeschrieben notieren:** **`a65e:60ff:fe12:3456`**
+   * Link-Local: `fe80::a65e:60ff:fe12:3456` | Global Unicast: `2001:db8:77:5:a65e:60ff:fe12:3456`
+* **Datenschutzproblem bei EUI-64:** Weil die feste Hardware-MAC direkt in der weltweit sichtbaren IPv6-Adresse steckt, wäre ein Smartphone/Laptop über verschiedene WLANs hinweg eindeutig wiedererkennbar (**Tracking**). Deshalb nutzen moderne Betriebssysteme (Windows, iOS, Android) standardmäßig **zufällige & temporäre Interface-IDs (*Privacy Extensions*)**!
+
+#### C. Hierarchische IPv6-Präfix-Planung an Nibble-Grenzen (4-Bit-Schritte!)
+Bei IPv6 rechnet man nicht mit knappen Host-Zahlen wie bei IPv4, sondern teilt das vom Provider erhaltene Präfix sauber an **Hex-Ziffern (Nibbles = 4 Bit)** auf:
+* **`/48` (Organisation / Firma / Stadt):** Enthält $2^{8} = \mathbf{256\text{ Standorte à }/56}$ bzw. $2^{16} = \mathbf{65.536\text{ Einzelnetze à }/64}$!
+* **`/56` (Ein Standort / Zweigstelle):** Enthält $2^{8} = \mathbf{256\text{ Einzelnetze à }/64}$!
+* **`/64` (Ein einzelnes LAN / VLAN / WLAN):** Enthält $2^{64}$ Adressen (**SLAAC erfordert zwingend `/64`!**).
+
+```text
+Beispiel-Schema einer Organisation (2001:db8:4a00::/48):
+2001:db8:4a00 : 20 | 30 :: /64
+└─── /48 ─────┘  │    │
+                 │    └── Netz-ID 30 (z. B. Drucker/Technik) -> Bits 57–64
+                 └─────── Standort-ID 20 (z. B. Zweigstelle Süd -> /56) -> Bits 49–56
+```
+
+#### D. Dual-Stack, Happy Eyeballs & Die 6 häufigsten IPv6-Fallen in Software & Datenbanken
+* **Dual-Stack:** IPv4 und IPv6 laufen parallel auf demselben Gerät; DNS liefert sowohl `A`- (IPv4) als auch `AAAA`-Records (IPv6).
+* **Priorität & *Happy Eyeballs*:** Betriebssysteme bevorzugen standardmäßig IPv6 (prüfbar in PowerShell mit `Get-NetPrefixPolicy` und `Get-NetIPAddress -AddressFamily IPv6`). Hängt eine IPv6-Verbindung, startet der Browser dank **Happy Eyeballs** nach einem Sekundenbruchteil parallel IPv4 und nimmt die schnellere Verbindung.
+* **⚠️ Firewall-Sicherheitsfalle bei Dual-Stack:** Firewall-Regeln gelten **immer pro Protokoll**! Wer nur IPv4-Regeln pflegt, lässt womöglich IPv6 komplett ungeschützt offen!
+* **Die 6 häufigsten IPv6-Programmier- & Datenbankfallen:**
+  1. **Zu kurzes Datenbankfeld (`VARCHAR(15)`):** Reicht nur für IPv4 (`255.255.255.255` = 15 Zeichen) und schneidet IPv6-Adressen ab! Eine IPv6-Adresse braucht bis zu **39 Zeichen** (mit IPv4-mapped bis **45 Zeichen**) $\rightarrow$ immer **`VARCHAR(45)`** (oder DB-Typ `INET`) nutzen!
+  2. **Feste IPs in Config-Dateien:** Besser immer **DNS-Namen** nutzen, damit das OS flexibel über `A`/`AAAA` wählen kann.
+  3. **URLs ohne eckige Klammern:** Immer `[IPv6]:Port` schreiben.
+  4. **IP-Validierung per Regex:** Statt fehleranfälliger Regex-Muster Standardbibliotheken nutzen (z. B. Python `ipaddress.ip_address()`, C# `IPAddress.TryParse()`).
+  5. **Adressvergleich als reiner String:** `2001:DB8::1` und `2001:db8:0:0:0:0:0:1` sind identisch, aber als Text ungleich $\rightarrow$ erst in ein **Adressobjekt** umwandeln, dann vergleichen!
+  6. **Server lauscht nur auf `0.0.0.0` (IPv4):** Besser auf **`::` mit Dual-Stack** lauschen (IPv4-Clients erscheinen dann oft als *IPv4-mapped* `::ffff:10.x.x.x`).
